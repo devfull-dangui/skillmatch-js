@@ -1,59 +1,96 @@
-// ============================================================================
-// 1. CONFIGURAÇÃO DE DADOS (Config / Mocks)
-// ============================================================================
+// ==========================================
+// 1. CLASSES, CONSTRUTOR, THIS E HERANÇA
+// ==========================================
 
+// Classe Base (Mãe)
+class Vaga {
+  constructor(id, titulo, ativa = true) {
+    this.id = id;
+    this.titulo = titulo;
+    this.ativa = ativa; // Uso de booleano
+  }
+}
+
+// Classe Filha (Herança)
+class VagaTecnologia extends Vaga {
+  constructor(id, titulo, requisitos) {
+    super(id, titulo); // Chama o construtor da classe pai
+    this.requisitos = requisitos; // Uso do 'this'
+  }
+}
+
+// Criando pelo menos 3 vagas fictícias usando a classe
 const VAGAS_DISPONIVEIS = [
-  {
-    id: 1,
-    titulo: "Desenvolvedor Front-end Júnior",
-    requisitos: ["HTML", "CSS", "JavaScript", "Git", "React"],
-  },
-  {
-    id: 2,
-    titulo: "Desenvolvedor Back-end Pleno",
-    requisitos: ["Node.js", "Express", "MongoDB", "SQL", "Git", "Docker"],
-  },
-  {
-    id: 3,
-    titulo: "Desenvolvedor Full-stack",
-    requisitos: ["HTML", "CSS", "JavaScript", "React", "Node.js", "SQL", "Git"],
-  },
+  new VagaTecnologia(1, "Desenvolvedor Front-end Júnior", ["HTML", "CSS", "JavaScript", "Git", "React"]),
+  new VagaTecnologia(2, "Desenvolvedor Back-end Pleno", ["Node.js", "Express", "MongoDB", "SQL", "Git", "Docker"]),
+  new VagaTecnologia(3, "Desenvolvedor Full-stack", ["HTML", "CSS", "JavaScript", "React", "Node.js", "SQL", "Git"])
 ];
 
+// O objeto candidato original (Contém strings, números e array)
 const CANDIDATO_ATUAL = {
   nome: "Arthur",
-  habilidades: ["HTML", "CSS", "JavaScript", "Git", "SQL"],
+  idade: 25, // Número
+  habilidades: ["HTML", "CSS", "JavaScript", "Git", "SQL"]
 };
 
-// ============================================================================
-// 2. REGRAS DE NEGÓCIO (Funções Puras e Imutáveis)
-// ============================================================================
+// ==========================================
+// 2. PROMISES E ASYNC/AWAIT
+// ==========================================
 
-/**
- * Compara o perfil do candidato com uma vaga específica.
- * @param {Object} candidato 
- * @param {Object} vaga 
- * @returns {Object} Resultado da compatibilidade
- */
+// Simula uma busca assíncrona em uma API/Banco de dados usando Promise
+const buscarDadosCandidatoDoServidor = (candidato) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(candidato);
+    }, 1000); // Simula 1 segundo de espera
+  });
+};
+
+// ==========================================
+// 3. CLOSURE E CALLBACK
+// ==========================================
+
+// Exemplo de Closure: Mantém o histórico de análises em um escopo fechado
+function criarGerenciadorHistorico() {
+  const historico = []; // Array privado na closure
+
+  return {
+    adicionarAoHistorico(vagaNome, compatibilidade) {
+      historico.push({ vagaNome, compatibilidade, data: new Date() });
+    },
+    exibirTotalConsultas() {
+      return `Total de análises guardadas no histórico: ${historico.length}`;
+    }
+  };
+}
+const historicoDeBuscas = criarGerenciadorHistorico();
+
+// Exemplo de Função que aceita um Callback explícito
+const processarSaidaLog = (mensagem, callbackExibicao) => {
+  callbackExibicao(mensagem);
+};
+
+// ==========================================
+// 4. REGRAS DE NEGÓCIO E MÉTODOS DE ARRAY
+// ==========================================
+
 const calcularCompatibilidadeVaga = (candidato, vaga) => {
-  const habilidadesCandidato = new Set(
-    candidato.habilidades.map((h) => h.toLowerCase())
-  );
-  
+  const habilidadesCandidato = new Set(candidato.habilidades.map(h => h.toLowerCase()));
   const requisitosVaga = vaga.requisitos;
 
-  // Filtra o que o candidato não tem (usando Set para busca O(1))
-  const faltantes = requisitosVaga.filter(
-    (req) => !habilidadesCandidato.has(req.toLowerCase())
-  );
+  // Método de Array 1: Filter
+  const faltantes = requisitosVaga.filter(req => !habilidadesCandidato.has(req.toLowerCase()));
 
   const totalRequisitos = requisitosVaga.length;
   const totalCorrespondencias = totalRequisitos - faltantes.length;
   
-  // Operador de coalescência nula (??) para evitar divisão por zero se a vaga não tiver requisitos
-  const compatibilidade = totalRequisitos > 0 
+  // Operador Ternário, Operadores Lógicos e Matemáticos
+  const compatibilidade = totalRequisitos > 0 && vaga.ativa
     ? Math.round((totalCorrespondencias / totalRequisitos) * 100) 
     : 0;
+
+  // Alimenta a nossa closure para histórico
+  historicoDeBuscas.adicionarAoHistorico(vaga.titulo, compatibilidade);
 
   return {
     tituloVaga: vaga.titulo,
@@ -62,50 +99,65 @@ const calcularCompatibilidadeVaga = (candidato, vaga) => {
   };
 };
 
-/**
- * Analisa o candidato contra todas as vagas e retorna o relatório ordenado.
- */
-const analisarAderenciaVagas = (candidato, listaVagas) => {
-  return listaVagas
-    .map((vaga) => calcularCompatibilidadeVaga(candidato, vaga))
-    .toSorted((a, b) => b.compatibilidade - a.compatibilidade); // toSorted() não muta o array original (ES2023)
-};
-
-// ============================================================================
-// 3. INTERFACE DE SAÍDA (Apenas Console/I/O)
-// ============================================================================
+// ==========================================
+// 5. INTERFACE E ESTRUTURAS DE REPETIÇÃO
+// ==========================================
 
 const exibirRelatorioVagas = (relatorio) => {
   console.log("--- Compatibilidade por Vaga ---");
   
-  for (const { tituloVaga, compatibilidade, faltantes } of relatorio) {
+  // Método de Array 2: ForEach (também serve como estrutura de repetição)
+  relatorio.forEach(({ tituloVaga, compatibilidade, faltantes }) => {
     console.log(`• ${tituloVaga}: ${compatibilidade}%`);
     
-    const mensagemFaltantes = faltantes.length > 0
-      ? `  Habilidades faltando: [${faltantes.join(", ")}]`
-      : "  Você cumpre 100% dos requisitos! 🎉";
-      
-    console.log(mensagemFaltantes);
-  }
+    // Switch-Case testando a compatibilidade
+    switch (true) {
+      case (compatibilidade === 100):
+        console.log("  Você cumpre 100% dos requisitos! 🎉");
+        break;
+      case (compatibilidade >= 50):
+        console.log(`  Boa compatibilidade! Faltam apenas: [${faltantes.join(", ")}]`);
+        break;
+      default:
+        console.log(`  Baixa aderência. Habilidades faltando: [${faltantes.join(", ")}]`);
+    }
+  });
 };
 
 const exibirRecomendacaoEstudo = (melhorOpcao) => {
   console.log("\n--- Recomendação de Estudo ---");
   
   if (melhorOpcao.faltantes.length === 0) {
-    console.log("Parabéns! Você já tem todas as habilidades para a sua melhor vaga. Hora de enviar o currículo! 🚀");
+    console.log("Parabéns! Hora de enviar o currículo! 🚀");
     return;
   }
 
-  console.log(`Para ficar 100% focado na sua melhor oportunidade (${melhorOpcao.tituloVaga}), foque em aprender:`);
-  melhorOpcao.faltantes.forEach((hab) => console.log(`👉 Estudar: ${hab}`));
+  console.log(`Para a vaga de (${melhorOpcao.tituloVaga}), use nosso loop de estudos:`);
+  
+  // Estrutura de repetição clássica: While
+  let i = 0;
+  while (i < melhorOpcao.faltantes.length) {
+    console.log(`👉 Estudar: ${melhorOpcao.faltantes[i]}`);
+    i++;
+  }
 };
 
-const executarSistemaRH = (candidato, vagas) => {
-  console.log(`=== ANÁLISE DE PERFIL: ${candidato.nome.toUpperCase()} ===\n`);
+// Função Principal configurada como ASYNC para permitir o AWAIT
+const executarSistemaRH = async () => {
+  console.log("Carregando dados do candidato assincronamente...\n");
+  
+  // Uso do Await para esperar a Promise resolver
+  const candidato = await buscarDadosCandidatoDoServidor(CANDIDATO_ATUAL);
 
-  const relatorioOrdenado = analisarAderenciaVagas(candidato, vagas);
-  const [melhorOpcao] = relatorioOrdenado; // Destructuring para pegar o primeiro elemento
+  // Impressão usando a arrow function que chama o callback
+  processarSaidaLog(`=== ANÁLISE DE PERFIL: ${candidato.nome.toUpperCase()} ===\n`, console.log);
+
+  // Método de Array 3: Map (com a ordenação do toSorted)
+  const relatorioOrdenado = VAGAS_DISPONIVEIS
+    .map((vaga) => calcularCompatibilidadeVaga(candidato, vaga))
+    .toSorted((a, b) => b.compatibilidade - a.compatibilidade);
+
+  const [melhorOpcao] = relatorioOrdenado;
 
   exibirRelatorioVagas(relatorioOrdenado);
   
@@ -113,9 +165,12 @@ const executarSistemaRH = (candidato, vagas) => {
   console.log(`Sua melhor vaga é: ${melhorOpcao.tituloVaga} com ${melhorOpcao.compatibilidade}% de compatibilidade.`);
 
   exibirRecomendacaoEstudo(melhorOpcao);
+
+  // Testando o output da closure
+  console.log(`\n[Sistema]: ${historicoDeBuscas.exibirTotalConsultas()}`);
 };
 
-// ============================================================================
-// 4. EXECUÇÃO
-// ============================================================================
-executarSistemaRH(CANDIDATO_ATUAL, VAGAS_DISPONIVEIS);
+// ==========================================
+// EXECUÇÃO DO PROGRAMA
+// ==========================================
+executarSistemaRH();
