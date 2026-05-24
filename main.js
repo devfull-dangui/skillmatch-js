@@ -30,7 +30,7 @@ const VAGAS_DISPONIVEIS = [
 const CANDIDATO_ATUAL = {
   nome: "Arthur",
   idade: 25, // Número
-  habilidades: ["HTML", "CSS", "JavaScript", "Git", "SQL"]
+  habilidades: ["HTML", "CSS", "JavaScript", "Git", "SQL", "React"]
 };
 
 // ==========================================
@@ -113,13 +113,13 @@ const exibirRelatorioVagas = (relatorio) => {
     // Switch-Case testando a compatibilidade
     switch (true) {
       case (compatibilidade === 100):
-        console.log("  Você cumpre 100% dos requisitos! 🎉");
+        console.log("  Parabéns! Você cumpre 100% dos requisitos! 🎉");
         break;
       case (compatibilidade >= 50):
         console.log(`  Boa compatibilidade! Faltam apenas: [${faltantes.join(", ")}]`);
         break;
       default:
-        console.log(`  Baixa aderência. Habilidades faltando: [${faltantes.join(", ")}]`);
+        console.log(`  Baixa compatibilidade. Habilidades faltando: [${faltantes.join(", ")}]`);
     }
   });
 };
@@ -137,7 +137,7 @@ const exibirRecomendacaoEstudo = (melhorOpcao) => {
   // Estrutura de repetição clássica: While
   let i = 0;
   while (i < melhorOpcao.faltantes.length) {
-    console.log(`👉 Estudar: ${melhorOpcao.faltantes[i]}`);
+    console.log(`Estudar: ${melhorOpcao.faltantes[i]}`);
     i++;
   }
 };
